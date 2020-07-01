@@ -1,0 +1,56 @@
+package com.flickipedia.data;
+
+import com.flickipedia.util.Util;
+
+public class Movie extends Title {
+    private int releaseDate, releaseMonth, releaseYear;
+    private String country, agerating;
+
+    public Movie(int id, String name) {
+        super(id, name);
+    }
+
+    public int getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(int releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public int getReleaseMonth() {
+        return releaseMonth;
+    }
+
+    public void setReleaseMonth(int releaseMonth) {
+        this.releaseMonth = releaseMonth;
+    }
+
+    public String getReleaseMonthString() {
+        return Util.monthToString(this.releaseMonth);
+    }
+
+    public int getReleaseYear() {
+        return releaseYear;
+    }
+
+    public void setReleaseYear(int releaseYear) {
+        this.releaseYear = releaseYear;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getAgerating() {
+        return agerating;
+    }
+
+    public void setAgerating(String agerating) {
+        this.agerating = agerating;
+    }
+}
