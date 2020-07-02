@@ -65,4 +65,12 @@ public class Movie extends Title {
     public void addTheater(Theater theater) {
         this.playingAt.add(theater);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Movie))
+            return false;
+
+        return this.getId() == ((Movie) obj).getId();
+    }
 }

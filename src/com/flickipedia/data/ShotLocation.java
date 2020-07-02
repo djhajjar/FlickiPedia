@@ -38,4 +38,14 @@ public class ShotLocation {
     public Title getTitle() {
         return title;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ShotLocation))
+            return false;
+
+        ShotLocation loc = (ShotLocation) obj;
+        return this.getState().equals(loc.getState()) && this.getCountry().equals(loc.getCountry())
+                && this.getCity().equals(loc.getCity()) && this.getTitle().equals(loc.getTitle());
+    }
 }

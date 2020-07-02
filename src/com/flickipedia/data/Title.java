@@ -9,6 +9,7 @@ public abstract class Title {
     private ArrayList<Genre> genre;
     private ArrayList<StreamService> streams;
     private ArrayList<Trailer> trailers;
+    private ArrayList<Participant> actors, writers, directors;
 
     public Title(int id, String name) {
         this.id = id;
@@ -17,6 +18,9 @@ public abstract class Title {
         this.genre = new ArrayList<Genre>();
         this.streams = new ArrayList<StreamService>();
         this.trailers = new ArrayList<Trailer>();
+        this.actors = new ArrayList<Participant>();
+        this.writers = new ArrayList<Participant>();
+        this.directors = new ArrayList<Participant>();
     }
 
     public int getId() {
@@ -36,8 +40,7 @@ public abstract class Title {
     }
 
     public void genShotAt(String city, String state, String country) {
-        ShotLocation loc = new ShotLocation(this, city, state, country);
-        this.shotAt.add(loc);
+        this.shotAt.add(new ShotLocation(this, city, state, country));
     }
 
     public ArrayList<Genre> getGenre() {
@@ -49,8 +52,7 @@ public abstract class Title {
     }
 
     public void genGenre(String name, String desc) {
-        Genre gen = new Genre(name, desc);
-        this.genre.add(gen);
+        this.genre.add(new Genre(name, desc));
     }
 
     public ArrayList<StreamService> getStreams() {
@@ -62,8 +64,7 @@ public abstract class Title {
     }
 
     public void genStream(String name, String url) {
-        StreamService stream = new StreamService(name, url);
-        this.streams.add(stream);
+        this.streams.add(new StreamService(name, url));
     }
 
     public ArrayList<Trailer> getTrailers() {
@@ -72,5 +73,37 @@ public abstract class Title {
 
     public void addTrailer(Trailer trailer) {
         this.trailers.add(trailer);
+    }
+
+    public ArrayList<Participant> getActors() {
+        return actors;
+    }
+
+    public void addActor(Participant actor) {
+        this.actors.add(actor);
+    }
+
+    public ArrayList<Participant> getWriters() {
+        return writers;
+    }
+
+    public void addWriter(Participant writer) {
+        this.writers.add(writer);
+    }
+
+    public ArrayList<Participant> getDirectors() {
+        return directors;
+    }
+
+    public void addDirector(Participant director) {
+        this.directors.add(director);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Title))
+            return false;
+
+        return this.getId() == ((Title) obj).getId();
     }
 }
