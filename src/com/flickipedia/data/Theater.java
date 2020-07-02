@@ -59,4 +59,14 @@ public class Theater {
     public void setCity(String city) {
         this.city = city;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof Theater))
+            return false;
+        
+        Theater theater = (Theater) obj;
+        
+        return theater.getName().equals(this.getName()) && theater.getZip().equals(this.getZip());
+    }
 }

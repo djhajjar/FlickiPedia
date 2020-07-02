@@ -15,4 +15,12 @@ public class StreamService {
     public String getUrl() {
         return url;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof StreamService))
+            return false;
+
+        return ((StreamService) obj).getName().equals(this.getName());
+    }
 }

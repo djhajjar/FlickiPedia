@@ -23,4 +23,12 @@ public class Genre {
     public void setDesc(String desc) {
         this.desc = desc;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Genre))
+            return false;
+
+        return this.getName().equals(((Genre) obj).getName());
+    }
 }

@@ -44,4 +44,15 @@ public class Trailer {
     public Title getTitle() {
         return title;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Trailer)) {
+            return false;
+        }
+
+        Trailer trailer = (Trailer) obj;
+
+        return this.getId() == trailer.getId() && this.getTitle().equals(trailer.getTitle());
+    }
 }

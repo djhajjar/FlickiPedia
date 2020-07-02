@@ -3,7 +3,7 @@ package com.flickipedia.data;
 public class Participant {
     private int id;
     private String first, middle, last;
-    
+
     public Participant(int id) {
         this.id = id;
     }
@@ -34,5 +34,13 @@ public class Participant {
 
     public void setLast(String last) {
         this.last = last;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Participant))
+            return false;
+
+        return this.getId() == ((Participant) obj).getId();
     }
 }
