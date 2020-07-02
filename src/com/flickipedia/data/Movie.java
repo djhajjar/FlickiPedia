@@ -1,13 +1,17 @@
 package com.flickipedia.data;
 
+import java.util.ArrayList;
+
 import com.flickipedia.util.Util;
 
 public class Movie extends Title {
     private int releaseDate, releaseMonth, releaseYear;
     private String country, agerating;
+    private ArrayList<Theater> playingAt;
 
     public Movie(int id, String name) {
         super(id, name);
+        this.playingAt = new ArrayList<Theater>();
     }
 
     public int getReleaseDate() {
@@ -52,5 +56,13 @@ public class Movie extends Title {
 
     public void setAgerating(String agerating) {
         this.agerating = agerating;
+    }
+
+    public ArrayList<Theater> getPlayingAt() {
+        return playingAt;
+    }
+
+    public void addTheater(Theater theater) {
+        this.playingAt.add(theater);
     }
 }

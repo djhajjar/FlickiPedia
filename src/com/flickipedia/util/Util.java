@@ -30,4 +30,12 @@ public class Util {
         else
             return "Invalid Month";
     }
+
+    public static String formatDate(int month, int day, int year) {
+        String date = monthToString(month);
+        date += " " + day;
+        date += ", " + year;
+
+        return date;
+    }
 }
