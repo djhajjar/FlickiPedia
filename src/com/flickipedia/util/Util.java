@@ -1,5 +1,7 @@
 package com.flickipedia.util;
 
+import java.util.ArrayList;
+
 public class Util {
 
     public static String monthToString(int month) {
@@ -37,5 +39,17 @@ public class Util {
         date += ", " + year;
 
         return date;
+    }
+
+    public static <T> ArrayList<T> removeDuplicates(ArrayList<T> list) {
+        ArrayList<T> newList = new ArrayList<T>();
+
+        for (T element : list) {
+            if (!newList.contains(element)) {
+                newList.add(element);
+            }
+        }
+
+        return newList;
     }
 }

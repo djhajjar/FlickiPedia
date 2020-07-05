@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.flickipedia.fxml.MainFXMLController">
+	<left>
+		<VBox alignment="TOP_CENTER" prefHeight="800.0" prefWidth="382.0" BorderPane.alignment="CENTER">
+			<children>
+						<TextArea fx:id="logArea" prefHeight="200.0" prefWidth="367.0" text="Log" />
+				<Label text=" " />
+				<Button fx:id="searchBtn" mnemonicParsing="false" onAction="#searchBtnAction" text="Search" />
+				<Label text=" " />
+				<HBox alignment="TOP_CENTER" prefHeight="9.0" prefWidth="382.0">
+					<children>
+						<CheckBox fx:id="movieCheck" mnemonicParsing="false" text="Movie" />
+						<Label text="          " />
+						<CheckBox fx:id="tvCheck" mnemonicParsing="false" text="TV Show" />
+					</children>
+				</HBox>
+				<Label text=" " />
+				<HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="382.0">
+					<children>
+						<CheckBox fx:id="nameCheck" mnemonicParsing="false" text="Name" />
+						<TextField fx:id="nameField" />
+					</children>
+				</HBox>
+				<HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="382.0">
+					<children>
+						<CheckBox fx:id="genreCheck" mnemonicParsing="false" text="Genre" />
+						<TextField fx:id="genreField" />
+					</children>
+				</HBox>
+				<HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="382.0">
+					<children>
+						<CheckBox fx:id="yearCheck" mnemonicParsing="false" text="Start Year" />
+						<TextField fx:id="startYearField" prefHeight="25.0" prefWidth="71.0" />
+						<Label text=" - End Year" />
+						<TextField fx:id="endYearField" prefHeight="25.0" prefWidth="71.0" />
+					</children>
+				</HBox>
+				<HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="382.0">
+					<children>
+						<CheckBox fx:id="actorCheck" mnemonicParsing="false" text="Actor Full Name" />
+						<TextField fx:id="actorField" />
+					</children>
+				</HBox>
+				<HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="382.0">
+					<children>
+						<CheckBox fx:id="writerCheck" mnemonicParsing="false" text="Writer Full Name" />
+						<TextField fx:id="writerField" />
+					</children>
+				</HBox>
+				<HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="382.0">
+					<children>
+						<CheckBox fx:id="directorCheck" mnemonicParsing="false" text="Director Full Name" />
+						<TextField fx:id="directorField" />
+					</children>
+				</HBox>
+				<HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="382.0">
+					<children>
+						<CheckBox fx:id="countryCheck" mnemonicParsing="false" text="Country" />
+						<TextField fx:id="countryField" />
+					</children>
+				</HBox>
+			</children>
+		</VBox>
+	</left>
+   <center>
+				<TextArea fx:id="output" prefHeight="800.0" prefWidth="800.0" text="Output" BorderPane.alignment="CENTER" />
+   </center>
+</BorderPane>
