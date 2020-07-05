@@ -10,6 +10,7 @@ public abstract class Title {
     private ArrayList<StreamService> streams;
     private ArrayList<Trailer> trailers;
     private ArrayList<Participant> actors, writers, directors;
+    private ArrayList<Review> reviews;
 
     public Title(int id, String name) {
         this.id = id;
@@ -21,6 +22,7 @@ public abstract class Title {
         this.actors = new ArrayList<Participant>();
         this.writers = new ArrayList<Participant>();
         this.directors = new ArrayList<Participant>();
+        this.reviews = new ArrayList<Review>();
     }
 
     public int getId() {
@@ -97,6 +99,14 @@ public abstract class Title {
 
     public void addDirector(Participant director) {
         this.directors.add(director);
+    }
+
+    public ArrayList<Review> getReviews() {
+        return reviews;
+    }
+
+    public void addReview(Review review) {
+        this.reviews.add(review);
     }
 
     @Override

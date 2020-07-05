@@ -1,9 +1,10 @@
 package com.flickipedia.data;
 
 public class Trailer {
-    private int id, duration;
+    private int id;
     private String name, desc;
     private Title title;
+    private double duration;
 
     public Trailer(int id, Title title) {
         this.id = id;
@@ -17,11 +18,11 @@ public class Trailer {
         return id;
     }
 
-    public int getDuration() {
+    public double getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(double duration) {
         this.duration = duration;
     }
 

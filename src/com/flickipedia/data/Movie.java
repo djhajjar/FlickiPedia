@@ -6,8 +6,9 @@ import com.flickipedia.util.Util;
 
 public class Movie extends Title {
     private int releaseDate, releaseMonth, releaseYear;
-    private String country, agerating;
+    private String country, ageRating;
     private ArrayList<Theater> playingAt;
+    private double duration;
 
     public Movie(int id, String name) {
         super(id, name);
@@ -50,12 +51,12 @@ public class Movie extends Title {
         this.country = country;
     }
 
-    public String getAgerating() {
-        return agerating;
+    public String getAgeRating() {
+        return ageRating;
     }
 
-    public void setAgerating(String agerating) {
-        this.agerating = agerating;
+    public void setAgeRating(String ageRating) {
+        this.ageRating = ageRating;
     }
 
     public ArrayList<Theater> getPlayingAt() {
@@ -64,6 +65,14 @@ public class Movie extends Title {
 
     public void addTheater(Theater theater) {
         this.playingAt.add(theater);
+    }
+
+    public double getDuration() {
+        return duration;
+    }
+
+    public void setDuration(double duration) {
+        this.duration = duration;
     }
 
     @Override

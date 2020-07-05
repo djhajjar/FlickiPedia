@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import com.flickipedia.data.*;
 import com.flickipedia.util.Util;
 
 public class SQLHelper {
@@ -18,16 +19,10 @@ public class SQLHelper {
 
             con = DriverManager.getConnection(url, user, pass);
         } catch (ClassNotFoundException e) {
-            Logger.getInstance().log(e.getMessage());
             e.printStackTrace();
         } catch (SQLException e) {
-            Logger.getInstance().log(e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    public String queryAll() {
-        return queryMovies(true, null, null, 0, 0, null, null, null, null);
     }
 
     public String queryMovies(boolean everything, String name, String genre, int start, int end, String actor,
@@ -35,33 +30,20 @@ public class SQLHelper {
         PreparedStatement st = null;
         ResultSet rs = null;
         String returnMsg = "";
+        ArrayList<Movie> movies = new ArrayList<Movie>();
 
         try {
-            String query = "SELECT MOVIE.TitleId, MOVIE.Country, MOVIE.AgeRating, MOVIE.Day, MOVIE.Month, "
-                    + "MOVIE.Year, TITLE.Name, PLAYING_AT.TheaterName, PLAYING_AT.TheaterZip, STREAMING_FROM.ServiceName, "
-                    + "REVIEW.StarRating, REVIEW.Description, USER.Email, PARTICIPANT.FirstName, "
-                    + "PARTICIPANT.MiddleName, PARTICIPANT.LastName, BELONGS_TO.GenreName, TRAILER.TrailerId, "
-                    + "SHOOT_LOCATION.City, SHOOT_LOCATION.State, SHOOT_LOCATION.Country "
-                    + "FROM MOVIE, TITLE, PLAYING_AT, STREAMING_FROM, REVIEW, PARTICIPATES_IN, PARTICIPANT, BELONGS_TO, "
-                    + "TRAILER, SHOOT_LOCATION, USER "
-                    + "WHERE MOVIE.TitleId = TITLE.TitleId AND MOVIE.TitleId = PLAYING_AT.TitleId AND "
-                    + "MOVIE.TitleId = STREAMING_FROM.TitleId AND MOVIE.TitleId = REVIEW.TitleId "
-                    + "AND MOVIE.TitleId = PARTICIPATES_IN.TitleId AND PARTICIPATES_IN.ParticipantId = PARTICIPANT.ParticipantId "
-                    + "AND MOVIE.TitleId = BELONGS_TO.TitleId AND MOVIE.TitleId = TRAILER.TitleId "
-                    + "AND MOVIE.TitleId = SHOOT_LOCATION.TitleId AND REVIEW.UserId = USER.UserId ";
+            String query = "SELECT MOVIE.TitleId, MOVIE.Country, MOVIE.AgeRating, MOVIE.Day, MOVIE.Month, MOVIE.Year, MOVIE.Duration, TITLE.Name "
+                    + "FROM MOVIE, TITLE WHERE MOVIE.TitleId = TITLE.TitleId ";
 
             if (!everything) {
                 if (name != null) {
-                    query += "MOVIE.name = " + name + " ";
-                }
-
-                if (genre != null) {
-                    query += "BELONGS_TO.GenreName = " + genre + " ";
+                    query += "AND TITLE.name = \'" + name + "\' ";
                 }
 
                 if (start != 0 && end != 0) {
                     if (start == end) {
-                        query += "MOVIE.Year = ? ";
+                        query += "AND MOVIE.Year = " + Integer.toString(start) + " ";
                     } else {
                         query += "(";
 
@@ -75,11 +57,9 @@ public class SQLHelper {
                     }
                 }
 
-                query += this.queryParticipants(actor, writer, director);
-
                 if (country != null) {
-                    query += "MOVIE.Country = \"";
-                    query += country + "\"";
+                    query += "AND MOVIE.Country = \'";
+                    query += country + "\' ";
                 }
             }
 
@@ -92,11 +72,37 @@ public class SQLHelper {
 
             if (rs.next()) {
                 do {
-                    returnMsg += rs.getString(7);
-                    returnMsg += "\n";
+                    returnMsg += rs.getString(1);
+                    returnMsg += " " + rs.getString(8) + "\n";
+
+                    // construct the movie
+                    movies.add(new Movie(rs.getInt(1), rs.getString(8)));
+                    movies.get(movies.size() - 1).setCountry(rs.getString(2));
+                    movies.get(movies.size() - 1).setAgeRating(rs.getString(3));
+                    movies.get(movies.size() - 1).setReleaseDate(rs.getInt(4));
+                    movies.get(movies.size() - 1).setReleaseMonth(rs.getInt(5));
+                    movies.get(movies.size() - 1).setReleaseYear(rs.getInt(6));
+                    movies.get(movies.size() - 1).setDuration(rs.getDouble(7));
+                    this.addTheaters(movies.get(movies.size() - 1));
                 } while (rs.next());
+
+                // remove all of the movies not with the given participant
+                ArrayList<Integer> ids = this.queryParticipants(actor, writer, director);
+                for (int i = 0; i < movies.size(); i++) {
+                    if (!ids.contains(movies.get(i).getId())) {
+                        movies.remove(i);
+                    }
+                }
+
+                for (Movie movie : movies) {
+                    this.addStreams(movie);
+                    this.addGenre(movie);
+                    this.addShootLocations(movie);
+                    this.addTrailers(movie);
+                    this.addReviews(movie);
+                }
             } else {
-                returnMsg = "No Movies with that filter found!";
+                returnMsg = "No Movies with that filter found!\n";
             }
         } catch (SQLException e) {
             Logger.getInstance().log(e.getMessage());
@@ -125,67 +131,54 @@ public class SQLHelper {
             String writer, String director, String country) {
         PreparedStatement st = null;
         ResultSet rs = null;
-        String returnMsg = "";
+        String query = "";
+        String returnMessage = "";
+        ArrayList<TVShow> shows = new ArrayList<TVShow>();
 
-        try { // TODO fix query
-            String query = "SELECT TV_SHOW.TitleId, TV_SHOW.Country, TITLE.Name, PLAYING_AT.TheaterName,"
-                    + "PLAYING_AT.TheaterZip, STREAMING_FROM.ServiceName, STREAMING_FROM.url,"
-                    + "REVIEW.StarRating, REVIEW.Description, USER.Email, PARTICIPANT.FirstName, "
-                    + "PARTICIPANT.MiddleName, PARTICIPANT.LastName, BELONGS_TO.GenreName, TRAILER.TrailerId, "
-                    + "SHOOT_LOCATION.City, SHOOT_LOCATION.State, SHOOT_LOCATION.Country, SEASON.SeasonNumber, EPISODE.SeasonNumber, "
-                    + "EPISODE.EpisodeNumber, EPISODE.Name, EPISODE.Year"
-                    + "FROM TV_SHOW, TITLE, PLAYING_AT, STREAMING_FROM, REVIEW, PARTICIPATES_IN, PARTICIPANT, BELONGS_TO, "
-                    + "TRAILER, SHOOT_LOCATION, USER, SEASON, EPISODE "
-                    + "WHERE TV_SHOW.TitleId = TITLE.TitleId AND TV_SHOW.TitleId = PLAYING_AT.TitleId AND "
-                    + "TV_SHOW.TitleId = STREAMING_FROM.TitleId AND TV_SHOW.TitleId = REVIEW.TitleId "
-                    + "AND TV_SHOW.TitleId = PARTICIPATES_IN.TitleId AND PARTICIPANTS_IN.ParticipantId = PARTICIPANT.ParticipantId "
-                    + "AND TV_SHOW.TitleId = BELONGS_TO.TitleId AND TV_SHOW.TitleId = TRAILER.TitleId "
-                    + "AND TV_SHOW.TitleId = SHOOT_LOCATION.TitleId REVIEW.UserId = USER.UserId ";
+        try {
+            query = "SELECT TV_SHOW.TitleId, TV_SHOW.Country, TITLE.Name FROM TV_SHOW, "
+                    + "TITLE WHERE TV_SHOW.TitleId = TITLE.TitleId ";
 
             if (!everything) {
                 if (name != null) {
-                    query += "TV_SHOW.name = " + name + " ";
+                    query += "AND TITLE.name = \'" + name + "\' ";
                 }
-
-                if (genre != null) {
-                    query += "TV_SHOW.GenreName = " + genre + " ";
-                }
-
-                if (start != 0 && end != 0) {
-                    if (start == end) {
-                        query += "TV_SHOW.Year = ? ";
-                    } else {
-                        query += "(";
-
-                        for (int i = start; i < end; i++) {
-                            query += "TV_SHOW.Year = ";
-                            query += Integer.toString(i);
-                            query += " OR ";
-                        }
-
-                        query += "TV_SHOW.Year = " + Integer.toString(end) + ") ";
-                    }
-                }
-
-                query += this.queryParticipants(actor, writer, director);
 
                 if (country != null) {
-                    query += "TV_SHOW.Country = \"";
-                    query += country + "\"";
+                    query += "AND TV_SHOW.Country = \'";
+                    query += country + "\' ";
                 }
-            }
-
-            if (query.endsWith(" ")) {
-                query = query.substring(0, query.length() - 1);
             }
 
             st = con.prepareStatement(query);
             rs = st.executeQuery();
 
             if (rs.next()) {
-                // TODO
+                do {
+                    shows.add(new TVShow(rs.getInt(1), rs.getString(3)));
+                    this.addSeasons(shows.get(shows.size() - 1), start, end);
+                    
+                    if (shows.get(shows.size() - 1).getSeasons().size() == 0) {
+                        shows.remove(shows.size() - 1);
+                    }
+                } while (rs.next());
+
+                ArrayList<Integer> ids = this.queryParticipants(actor, writer, director);
+                for (int i = 0; i < shows.size(); i++) {
+                    if (!ids.contains(shows.get(i).getId())) {
+                        shows.remove(i);
+                    }
+                }
+
+                for (TVShow show : shows) {
+                    this.addStreams(show);
+                    this.addGenre(show);
+                    this.addShootLocations(show);
+                    this.addTrailers(show);
+                    this.addReviews(show);
+                }
             } else {
-                returnMsg = "No TV Show with that filter found!";
+                returnMessage = "No TV Shows found with that filter.\n";
             }
         } catch (SQLException e) {
             Logger.getInstance().log(e.getMessage());
@@ -207,10 +200,233 @@ public class SQLHelper {
             }
         }
 
-        return returnMsg;
+        return returnMessage;
     }
 
-    private String queryParticipants(String actor, String writer, String director) {
+    private void addSeasons(TVShow show, int start, int end) {
+        // TODO
+    }
+
+    private void addEpisodes(Season season, int start, int end) {
+        // TODO
+    }
+
+    private void addGenre(Title title) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement("SELECT GENRE.Name, GENRE.Description FROM GENRE, BELONGS_TO WHERE "
+                    + "BELONGS_TO.TitleId = ? AND BELONGS_TO.GenreName = GENRE.Name");
+            st.setInt(1, title.getId());
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                title.addGenre(new Genre(rs.getString(1), rs.getString(2)));
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
+    }
+
+    private void addStreams(Title title) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement(
+                    "SELECT STREAM_SERVICE.Name, STREAM_SERVICE.URL FROM STREAMING_FROM, STREAM_SERVICE WHERE "
+                            + "STREAMING_FROM.TitleId = ? AND STREAMING_FROM.ServiceName = STREAM_SERVICE.Name");
+            st.setInt(1, title.getId());
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                title.addStream(new StreamService(rs.getString(1), rs.getString(2)));
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
+    }
+
+    private void addShootLocations(Title title) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement("SELECT SHOOT_LOCATION.City, SHOOT_LOCATION.State, SHOOT_LOCATION.Country "
+                    + "FROM SHOOT_LOCATION WHERE SHOOT_LOCATION.TitleId = ?");
+            st.setInt(1, title.getId());
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                title.addShotAt(new ShotLocation(title, rs.getString(1), rs.getString(2), rs.getString(3)));
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
+    }
+
+    private void addTrailers(Title title) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement("SELECT TRAILER.TrailerId, TRAILER.Name, TRAILER.Description, TRAILER.Duration "
+                    + "FROM TRAILER WHERE TRAILER.TitleId = ?");
+            st.setInt(1, title.getId());
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                title.addTrailer(new Trailer(rs.getInt(1), title));
+                title.getTrailers().get(title.getTrailers().size() - 1).setName(rs.getString(2));
+                title.getTrailers().get(title.getTrailers().size() - 1).setDesc(rs.getString(3));
+                title.getTrailers().get(title.getTrailers().size() - 1).setDuration(rs.getDouble(4));
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
+    }
+
+    private void addReviews(Title title) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement("SELECT USER.Email, REVIEW.StarRating, REVIEW.Description "
+                    + "FROM REVIEW, USER WHERE REVIEW.TitleId = ? AND REVIEW.UserId = USER.UserId");
+            st.setInt(1, title.getId());
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                title.addReview(new Review(title.getId(), rs.getString(1)));
+                title.getReviews().get(title.getReviews().size() - 1).setStarRating(rs.getInt(2));
+                title.getReviews().get(title.getReviews().size() - 1).setDescription(rs.getString(3));
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
+    }
+
+    private void addTheaters(Movie movie) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement("SELECT THEATER.Name, THEATER.City, THEATER.Street, "
+                    + "THEATER.State, THEATER.Country, THEATER.Zip FROM PLAYING_AT, THEATER "
+                    + "WHERE PLAYING_AT.TitleId = ? AND PLAYING_AT.TheaterName = THEATER.Name "
+                    + "AND PLAYING_AT.TheaterZip = THEATER.ZIP");
+            st.setInt(1, movie.getId());
+            rs = st.executeQuery();
+            while (rs.next()) {
+                movie.addTheater(new Theater(rs.getString(1), rs.getString(6)));
+                movie.getPlayingAt().get(movie.getPlayingAt().size() - 1).setCity(rs.getString(2));
+                movie.getPlayingAt().get(movie.getPlayingAt().size() - 1).setStreet(rs.getString(3));
+                movie.getPlayingAt().get(movie.getPlayingAt().size() - 1).setState(rs.getString(4));
+                movie.getPlayingAt().get(movie.getPlayingAt().size() - 1).setCountry(rs.getString(5));
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
+    }
+
+    private ArrayList<Integer> queryParticipants(String actor, String writer, String director) {
         String query = "";
         ArrayList<Integer> ids = new ArrayList<Integer>();
 
@@ -385,26 +601,8 @@ public class SQLHelper {
             }
         }
 
-        String returnQuery = "";
-
-        if (!ids.isEmpty()) {
-            ids = Util.removeDuplicates(ids);
-
-            // all but last id
-            if (ids.size() > 1) {
-                for (int i = 0; i < ids.size() - 1; i++) {
-                    returnQuery += "PARTICIPATES_IN.TitleId = ";
-                    returnQuery += Integer.toString(ids.get(i));
-                    returnQuery += " AND ";
-                }
-            }
-
-            // last id
-            returnQuery += "PARTICIPATES_IN.TitleId = ";
-            returnQuery += Integer.toString(ids.get(ids.size() - 1));
-        }
-
-        return returnQuery;
+        Util.removeDuplicates(ids);
+        return ids;
     }
 
     public void exit() {
