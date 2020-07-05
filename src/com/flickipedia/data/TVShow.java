@@ -34,4 +34,9 @@ public class TVShow extends Title {
 
         return this.getId() == ((TVShow) obj).getId();
     }
+
+    @Override
+    public String toString() {
+        return this.getName();
+    }
 }

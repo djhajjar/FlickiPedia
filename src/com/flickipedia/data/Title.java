@@ -116,4 +116,9 @@ public abstract class Title {
 
         return this.getId() == ((Title) obj).getId();
     }
+
+    @Override
+    public String toString() {
+        return this.getName();
+    }
 }

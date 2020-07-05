@@ -97,9 +97,6 @@ public class MainFXMLController implements Initializable {
 
     @FXML
     public void searchBtnAction() {
-        output.appendText("Hello World!\n");
-        Logger.getInstance().log("searchBtnAction() called\n");
-
         boolean movie = movieCheck.isSelected(), tvshow = tvCheck.isSelected();
 
         if (!movie && !tvshow) {
@@ -175,13 +172,14 @@ public class MainFXMLController implements Initializable {
         }
 
         if (movie) {
-            output.appendText(
-                    this.sql.queryMovies(everything, name, genre, start, end, actor, writer, director, country));
+            this.message(this.sql.queryMovies(everything, name, genre, start, end, actor, writer, director, country));
         }
 
         if (tvshow) {
-            // TODO
+            this.message(this.sql.queryTVShow(everything, name, genre, start, end, actor, writer, director, country));
         }
+
+        this.message("End of Query!\n\n");
     }
 
     public void message(String msg) {

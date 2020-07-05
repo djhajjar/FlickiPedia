@@ -45,7 +45,7 @@ public class SQLHelper {
                     if (start == end) {
                         query += "AND MOVIE.Year = " + Integer.toString(start) + " ";
                     } else {
-                        query += "(";
+                        query += "AND (";
 
                         for (int i = start; i < end; i++) {
                             query += "MOVIE.Year = ";
@@ -72,9 +72,6 @@ public class SQLHelper {
 
             if (rs.next()) {
                 do {
-                    returnMsg += rs.getString(1);
-                    returnMsg += " " + rs.getString(8) + "\n";
-
                     // construct the movie
                     movies.add(new Movie(rs.getInt(1), rs.getString(8)));
                     movies.get(movies.size() - 1).setCountry(rs.getString(2));
@@ -89,7 +86,7 @@ public class SQLHelper {
                 // remove all of the movies not with the given participant
                 ArrayList<Integer> ids = this.queryParticipants(actor, writer, director);
                 for (int i = 0; i < movies.size(); i++) {
-                    if (!ids.contains(movies.get(i).getId())) {
+                    if (!ids.isEmpty() && !ids.contains(movies.get(i).getId())) {
                         movies.remove(i);
                     }
                 }
@@ -100,6 +97,7 @@ public class SQLHelper {
                     this.addShootLocations(movie);
                     this.addTrailers(movie);
                     this.addReviews(movie);
+                    returnMsg += movie.toString() + "\n";
                 }
             } else {
                 returnMsg = "No Movies with that filter found!\n";
@@ -157,7 +155,7 @@ public class SQLHelper {
                 do {
                     shows.add(new TVShow(rs.getInt(1), rs.getString(3)));
                     this.addSeasons(shows.get(shows.size() - 1), start, end);
-                    
+
                     if (shows.get(shows.size() - 1).getSeasons().size() == 0) {
                         shows.remove(shows.size() - 1);
                     }
@@ -165,7 +163,7 @@ public class SQLHelper {
 
                 ArrayList<Integer> ids = this.queryParticipants(actor, writer, director);
                 for (int i = 0; i < shows.size(); i++) {
-                    if (!ids.contains(shows.get(i).getId())) {
+                    if (!ids.isEmpty() && !ids.contains(shows.get(i).getId())) {
                         shows.remove(i);
                     }
                 }
@@ -176,6 +174,7 @@ public class SQLHelper {
                     this.addShootLocations(show);
                     this.addTrailers(show);
                     this.addReviews(show);
+                    returnMessage += show.toString() + '\n';
                 }
             } else {
                 returnMessage = "No TV Shows found with that filter.\n";
@@ -204,11 +203,105 @@ public class SQLHelper {
     }
 
     private void addSeasons(TVShow show, int start, int end) {
-        // TODO
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement("SELECT SEASON.SeasonNumber FROM SEASON, TV_SHOW WHERE TV_SHOW.TitleId = ?");
+            st.setInt(1, show.getId());
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                show.addSeason(new Season(rs.getInt(1), show));
+                this.addEpisodes(show.getSeasons().get(show.getSeasons().size() - 1), start, end);
+
+                if (show.getSeasons().get(show.getSeasons().size() - 1).getEpisodes().size() == 0) {
+                    show.getSeasons().remove(show.getSeasons().size() - 1);
+                }
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
     }
 
     private void addEpisodes(Season season, int start, int end) {
-        // TODO
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            String query = "SELECT EPISODE.EpisodeNumber, EPISODE.Name, EPISODE.Day, EPISODE.Month, "
+                    + "EPISODE.Year, EPISODE.AgeRating, EPISODE.Duration FROM EPISODE WHERE EPISODE.SeasonNumber = ? "
+                    + "AND EPISODE.TitleId = ? ";
+
+            if (start != 0 && end != 0) {
+                if (start == end) {
+                    query += "AND EPISODE.Year = " + Integer.toString(start) + " ";
+                } else {
+                    query += "AND (";
+
+                    for (int i = start; i < end; i++) {
+                        query += "EPISODE.Year = ";
+                        query += Integer.toString(i);
+                        query += " OR ";
+                    }
+
+                    query += "EPISODE.Year = " + Integer.toString(end) + ") ";
+                }
+            }
+
+            if (query.endsWith(" ")) {
+                query = query.substring(0, query.length() - 1);
+            }
+
+            st = con.prepareStatement(query);
+            st.setInt(1, season.getNumber());
+            st.setInt(2, season.getShow().getId());
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                season.addEpisode(new Episode(rs.getInt(1), season, season.getShow()));
+                season.getEpisodes().get(season.getEpisodes().size() - 1).setName(rs.getString(2));
+                season.getEpisodes().get(season.getEpisodes().size() - 1).setDay(rs.getInt(3));
+                season.getEpisodes().get(season.getEpisodes().size() - 1).setMonth(rs.getInt(4));
+                season.getEpisodes().get(season.getEpisodes().size() - 1).setYear(rs.getInt(5));
+                season.getEpisodes().get(season.getEpisodes().size() - 1).setAgeRating(rs.getString(6));
+                season.getEpisodes().get(season.getEpisodes().size() - 1).setDuration(rs.getDouble(7));
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
     }
 
     private void addGenre(Title title) {
@@ -603,6 +696,92 @@ public class SQLHelper {
 
         Util.removeDuplicates(ids);
         return ids;
+    }
+
+    public boolean insertMovie(int id, String name, String country, String agerating, int day, int month, int year,
+            double duration) {
+        boolean successful = false, found = false;
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement("SELECT * FROM TITLE, MOVIE WHERE MOVIE.TitleId = ? OR TITLE.TitleId = ?");
+            st.setInt(1, id);
+            st.setInt(2, id);
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                successful = false;
+                found = true;
+            }
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
+
+        if (found) {
+            st = null;
+
+            try {
+                st = con.prepareStatement("INSERT INTO TITLE('TitleId', 'Name') VALUES (?, ?)");
+                st.setInt(1, id);
+                st.setString(2, name);
+                st.executeUpdate();
+            } catch (SQLException e) {
+                Logger.getInstance().log(e.getMessage());
+            } finally {
+                if (st != null) {
+                    try {
+                        st.close();
+                    } catch (SQLException e) {
+                        Logger.getInstance().log(e.getMessage());
+                    }
+                }
+            }
+
+            st = null;
+
+            try {
+                st = con.prepareStatement(
+                        "INSERT INTO MOVIE(`TitleId`,`Country`,`AgeRating`,`Day`,`Month`,`Year`,`Duration`)"
+                                + "VALUES (?, ?, ?, ?, ?, ?, ?)");
+                st.setInt(1, id);
+                st.setString(2, country);
+                st.setString(3, agerating);
+                st.setInt(4, day);
+                st.setInt(5, month);
+                st.setInt(6, year);
+                st.setDouble(7, duration);
+                st.executeUpdate();
+            } catch (SQLException e) {
+                Logger.getInstance().log(e.getMessage());
+            } finally {
+                if (st != null) {
+                    try {
+                        st.close();
+                    } catch (SQLException e) {
+                        Logger.getInstance().log(e.getMessage());
+                    }
+                }
+            }
+        }
+
+        return successful;
     }
 
     public void exit() {
