@@ -85,9 +85,9 @@ public class Movie extends Title {
 
     @Override
     public String toString() {
+
         String output = "";
-        // output = String.format("%-30s\t %d\t %-25s %-12s", getName(),
-        // getReleaseYear(), getCountry(), getAgeRating());
+        output = String.format("%-30s\t %d\t %-25s %-12s", getName(), getReleaseYear(), getCountry(), getAgeRating());
         if (getActors().size() > 0) {
             output = output + "\n\tActors:";
             for (int i = 0; i < getActors().size(); i++) {
@@ -95,15 +95,32 @@ public class Movie extends Title {
             }
         }
         if (getDirectors().size() > 0) {
+            output = output + "\n\tDirectors:";
             for (int i = 0; i < getDirectors().size(); i++) {
                 output = output + "\n\t\t" + getDirectors().get(i).getFirst() + " " + getDirectors().get(i).getLast();
             }
         }
         if (getWriters().size() > 0) {
+            output = output + "\n\tWriters:";
             for (int i = 0; i < getWriters().size(); i++) {
                 output = output + "\n\t\t" + getWriters().get(i).getFirst() + " " + getWriters().get(i).getLast();
             }
         }
+        if (playingAt.size() > 0) {
+            output = output + "\n\tPlaying at Theaters:";
+            for (int i = 0; i < playingAt.size(); i++) {
+                output = output + "\n\t\t" + playingAt.get(i).getName() + " - Address: " + playingAt.get(i).getStreet()
+                        + " " + playingAt.get(i).getCity() + ", " + playingAt.get(i).getState() + " "
+                        + playingAt.get(i).getZip();
+            }
+        }
+        if (getStreams().size() > 0) {
+            output = output + "\n\tStreaming From:";
+            for (int i = 0; i < getStreams().size(); i++) {
+                output = output + "\n\t\t" + getStreams().get(i).getName() + " - URL: " + getStreams().get(i).getUrl();
+            }
+        }
+        output = output + "\n";
         System.out.println(output);
         return output;
     }

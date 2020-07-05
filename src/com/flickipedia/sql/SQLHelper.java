@@ -98,7 +98,10 @@ public class SQLHelper {
                     this.addTrailers(movie);
                     this.addReviews(movie);
                     this.addParticipants(movie);
-                    returnMsg += movie.toString() + "\n";
+
+                    if (movie.getGenre().contains(new Genre(genre))) {
+                        returnMsg += movie.toString() + '\n';
+                    }
                 }
             } else {
                 returnMsg = "No Movies with that filter found!\n";
@@ -177,7 +180,10 @@ public class SQLHelper {
                     this.addTrailers(show);
                     this.addReviews(show);
                     this.addParticipants(show);
-                    returnMessage += show.toString() + '\n';
+
+                    if (show.getGenre().contains(new Genre(genre))) {
+                        returnMessage += show.toString() + '\n';
+                    }
                 }
             } else {
                 returnMessage = "No TV Shows found with that filter.\n";
