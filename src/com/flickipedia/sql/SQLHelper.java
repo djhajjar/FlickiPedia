@@ -97,6 +97,7 @@ public class SQLHelper {
                     this.addShootLocations(movie);
                     this.addTrailers(movie);
                     this.addReviews(movie);
+                    this.addParticipants(movie);
                     returnMsg += movie.toString() + "\n";
                 }
             } else {
@@ -174,6 +175,7 @@ public class SQLHelper {
                     this.addShootLocations(show);
                     this.addTrailers(show);
                     this.addReviews(show);
+                    this.addParticipants(show);
                     returnMessage += show.toString() + '\n';
                 }
             } else {
@@ -519,6 +521,59 @@ public class SQLHelper {
         }
     }
 
+    private void addParticipants(Title title) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = con.prepareStatement(
+                    "SELECT PARTICIPATES_IN.ParticipantId, PARTICIPANT.FirstName, PARTICIPANT.MiddleName, PARTICIPANT.LastName, "
+                            + "PARTICIPATES_IN.IsActor, PARTICIPATES_IN.IsWriter, PARTICIPATES_IN.IsDirector FROM PARTICIPATES_IN, PARTICIPANT "
+                            + "WHERE PARTICIPATES_IN.TitleId = ? AND PARTICIPATES_IN.ParticipantId = PARTICIPANT.ParticipantId");
+            st.setInt(1, title.getId());
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                Participant part = new Participant(rs.getInt(1));
+
+                part.setFirst(rs.getString(2));
+                part.setMiddle(rs.getString(3));
+                part.setLast(rs.getString(4));
+
+                if (rs.getBoolean(5)) {
+                    title.addActor(part);
+                }
+
+                if (rs.getBoolean(6)) {
+                    title.addWriter(part);
+                }
+
+                if (rs.getBoolean(7)) {
+                    title.addDirector(part);
+                }
+            }
+
+        } catch (SQLException e) {
+            Logger.getInstance().log(e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException e) {
+                    Logger.getInstance().log(e.getMessage());
+                }
+            }
+        }
+    }
+
     private ArrayList<Integer> queryParticipants(String actor, String writer, String director) {
         String query = "";
         ArrayList<Integer> ids = new ArrayList<Integer>();
@@ -700,7 +755,7 @@ public class SQLHelper {
 
     public boolean insertMovie(int id, String name, String country, String agerating, int day, int month, int year,
             double duration) {
-        boolean successful = false, found = false;
+        boolean successful = true, found = false;
         PreparedStatement st = null;
         ResultSet rs = null;
 
@@ -716,6 +771,7 @@ public class SQLHelper {
             }
         } catch (SQLException e) {
             Logger.getInstance().log(e.getMessage());
+            successful = false;
         } finally {
             if (rs != null) {
                 try {
@@ -734,16 +790,17 @@ public class SQLHelper {
             }
         }
 
-        if (found) {
+        if (!found) {
             st = null;
 
             try {
-                st = con.prepareStatement("INSERT INTO TITLE('TitleId', 'Name') VALUES (?, ?)");
+                st = con.prepareStatement("INSERT INTO TITLE (TitleId, Name) VALUES (?, ?)");
                 st.setInt(1, id);
                 st.setString(2, name);
                 st.executeUpdate();
             } catch (SQLException e) {
                 Logger.getInstance().log(e.getMessage());
+                successful = false;
             } finally {
                 if (st != null) {
                     try {
@@ -757,9 +814,8 @@ public class SQLHelper {
             st = null;
 
             try {
-                st = con.prepareStatement(
-                        "INSERT INTO MOVIE(`TitleId`,`Country`,`AgeRating`,`Day`,`Month`,`Year`,`Duration`)"
-                                + "VALUES (?, ?, ?, ?, ?, ?, ?)");
+                st = con.prepareStatement("INSERT INTO MOVIE (TitleId, Country, AgeRating, Day, Month, Year, Duration) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?)");
                 st.setInt(1, id);
                 st.setString(2, country);
                 st.setString(3, agerating);
@@ -770,6 +826,7 @@ public class SQLHelper {
                 st.executeUpdate();
             } catch (SQLException e) {
                 Logger.getInstance().log(e.getMessage());
+                successful = false;
             } finally {
                 if (st != null) {
                     try {

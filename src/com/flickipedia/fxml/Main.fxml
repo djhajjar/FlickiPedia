@@ -69,6 +69,8 @@
 						<TextField fx:id="countryField" />
 					</children>
 				</HBox>
+            <Label text=" " />
+            <Button fx:id="insertBtn" mnemonicParsing="false" onAction="#insertBtnAction" text="Insert New Movie" />
 			</children>
 		</VBox>
 	</left>

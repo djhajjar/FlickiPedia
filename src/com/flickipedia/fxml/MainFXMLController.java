@@ -1,17 +1,23 @@
 package com.flickipedia.fxml;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import com.flickipedia.sql.Logger;
 import com.flickipedia.sql.SQLHelper;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class MainFXMLController implements Initializable {
@@ -78,6 +84,11 @@ public class MainFXMLController implements Initializable {
     @FXML
     private TextArea output;
 
+    @FXML
+    private Button insertBtn;
+
+    private Stage insertStage;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Logger.init(logArea);
@@ -91,8 +102,16 @@ public class MainFXMLController implements Initializable {
         this.sql = sql;
     }
 
+    public SQLHelper getSQL() {
+        return this.sql;
+    }
+
     public void setStage(Stage stage) {
         this.primaryStage = stage;
+    }
+
+    public Stage getInsertStage() {
+        return this.insertStage;
     }
 
     @FXML
@@ -180,6 +199,29 @@ public class MainFXMLController implements Initializable {
         }
 
         this.message("End of Query!\n\n");
+    }
+
+    @FXML
+    public void insertBtnAction(ActionEvent event) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/flickipedia/fxml/InsertMovie.fxml"));
+        try {
+            Parent parent = (Parent) loader.load();
+            Scene insertScene = new Scene(parent, 400, 400);
+
+            insertStage = new Stage();
+            insertStage.setTitle("Insert New Movie");
+            insertStage.setScene(insertScene);
+            insertStage.initModality(Modality.WINDOW_MODAL);
+            insertStage.initOwner(this.primaryStage);
+            insertStage.setOnCloseRequest(e -> {
+                Logger.getInstance().log("Closed new movie insertion window.");
+            });
+            insertStage.show();
+
+            loader.<InsertMovieFXMLController>getController().setMainControl(this);
+        } catch (IOException e) {
+            Logger.getInstance().log("Error in loading insert btn");
+        }
     }
 
     public void message(String msg) {
