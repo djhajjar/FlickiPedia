@@ -117,6 +117,7 @@ public class MainFXMLController implements Initializable {
     @FXML
     public void searchBtnAction() {
         boolean movie = movieCheck.isSelected(), tvshow = tvCheck.isSelected();
+        this.output.clear();
 
         if (!movie && !tvshow) {
             this.message("You must select either movie or tvshow to search through.");

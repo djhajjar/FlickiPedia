@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.flickipedia.data.*;
-import com.flickipedia.util.Util;
 
 public class SQLHelper {
     private Connection con = null;
@@ -83,15 +82,9 @@ public class SQLHelper {
                     this.addTheaters(movies.get(movies.size() - 1));
                 } while (rs.next());
 
-                // remove all of the movies not with the given participant
-                ArrayList<Integer> ids = this.queryParticipants(actor, writer, director);
-                for (int i = 0; i < movies.size(); i++) {
-                    if (!ids.isEmpty() && !ids.contains(movies.get(i).getId())) {
-                        movies.remove(i);
-                    }
-                }
-
+                boolean printMe = false;
                 for (Movie movie : movies) {
+                    printMe = true;
                     this.addStreams(movie);
                     this.addGenre(movie);
                     this.addShootLocations(movie);
@@ -99,9 +92,85 @@ public class SQLHelper {
                     this.addReviews(movie);
                     this.addParticipants(movie);
 
-                    if (movie.getGenre().contains(new Genre(genre))) {
-                        returnMsg += movie.toString() + '\n';
+                    if (genre != null) {
+                        if (!movie.getGenre().contains(new Genre(genre)))
+                            printMe = false;
                     }
+
+                    if (actor != null) {
+                        String a[] = actor.split(" ");
+
+                        if (a.length == 1) {
+                            for (Participant partAct : movie.getActors()) {
+                                if (!partAct.getFirst().equals(a[0]))
+                                    printMe = false;
+                            }
+                        } else if (a.length == 2) {
+                            for (Participant partAct : movie.getActors()) {
+                                if (!partAct.getFirst().equals(a[0]) && !partAct.getLast().equals(a[1]))
+                                    printMe = false;
+                            }
+                        } else if (a.length == 3) {
+                            for (Participant partAct : movie.getActors()) {
+                                if (!partAct.getFirst().equals(a[0]) && !partAct.getMiddle().equals(a[1])
+                                        && !partAct.getLast().contentEquals(a[2]))
+                                    printMe = false;
+                            }
+                        } else {
+                            Logger.getInstance().log("Invalid Actor Name, query may return unexpected results.");
+                        }
+                    }
+
+                    if (writer != null) {
+                        String w[] = writer.split(" ");
+
+                        if (w.length == 1) {
+                            for (Participant partWriter : movie.getWriters()) {
+                                if (!partWriter.getFirst().equals(w[0]))
+                                    printMe = false;
+                            }
+                        } else if (w.length == 2) {
+                            for (Participant partWriter : movie.getWriters()) {
+                                if (!partWriter.getFirst().equals(w[0]) && !partWriter.getLast().equals(w[1]))
+                                    printMe = false;
+                            }
+                        } else if (w.length == 3) {
+                            for (Participant partWriter : movie.getWriters()) {
+                                if (!partWriter.getFirst().equals(w[0]) && !partWriter.getMiddle().equals(w[1])
+                                        && !partWriter.getLast().contentEquals(w[2]))
+                                    printMe = false;
+                            }
+                        } else {
+                            Logger.getInstance().log("Invalid Writer Name, query may return unexpected results.");
+                        }
+                    }
+
+                    if (director != null) {
+                        String d[] = director.split(" ");
+
+                        if (d.length == 1) {
+                            for (Participant partDirector : movie.getDirectors()) {
+                                if (!partDirector.getFirst().equals(d[0]))
+                                    printMe = false;
+                            }
+                        } else if (d.length == 2) {
+                            for (Participant partDirector : movie.getDirectors()) {
+                                if (!partDirector.getFirst().equals(d[0]) && !partDirector.getLast().equals(d[1]))
+                                    printMe = false;
+                            }
+                        } else if (d.length == 3) {
+                            for (Participant partDirector : movie.getDirectors()) {
+                                if (!partDirector.getFirst().equals(d[0]) && !partDirector.getMiddle().equals(d[1])
+                                        && !partDirector.getLast().contentEquals(d[2]))
+                                    printMe = false;
+                            }
+                        } else {
+                            Logger.getInstance().log("Invalid Director Name, query may return unexpected results.");
+                        }
+                    }
+
+                    if (printMe)
+                        returnMsg += movie.toString() + "\n";
                 }
             } else {
                 returnMsg = "No Movies with that filter found!\n";
@@ -166,14 +235,9 @@ public class SQLHelper {
                     }
                 } while (rs.next());
 
-                ArrayList<Integer> ids = this.queryParticipants(actor, writer, director);
-                for (int i = 0; i < shows.size(); i++) {
-                    if (!ids.isEmpty() && !ids.contains(shows.get(i).getId())) {
-                        shows.remove(i);
-                    }
-                }
-
+                boolean printMe = false;
                 for (TVShow show : shows) {
+                    printMe = true;
                     this.addStreams(show);
                     this.addGenre(show);
                     this.addShootLocations(show);
@@ -181,9 +245,85 @@ public class SQLHelper {
                     this.addReviews(show);
                     this.addParticipants(show);
 
-                    if (show.getGenre().contains(new Genre(genre))) {
-                        returnMessage += show.toString() + '\n';
+                    if (genre != null) {
+                        if (!show.getGenre().contains(new Genre(genre)))
+                            printMe = false;
                     }
+
+                    if (actor != null) {
+                        String a[] = actor.split(" ");
+
+                        if (a.length == 1) {
+                            for (Participant partAct : show.getActors()) {
+                                if (!partAct.getFirst().equals(a[0]))
+                                    printMe = false;
+                            }
+                        } else if (a.length == 2) {
+                            for (Participant partAct : show.getActors()) {
+                                if (!partAct.getFirst().equals(a[0]) && !partAct.getLast().equals(a[1]))
+                                    printMe = false;
+                            }
+                        } else if (a.length == 3) {
+                            for (Participant partAct : show.getActors()) {
+                                if (!partAct.getFirst().equals(a[0]) && !partAct.getMiddle().equals(a[1])
+                                        && !partAct.getLast().contentEquals(a[2]))
+                                    printMe = false;
+                            }
+                        } else {
+                            Logger.getInstance().log("Invalid Actor Name, query may return unexpected results.");
+                        }
+                    }
+
+                    if (writer != null) {
+                        String w[] = writer.split(" ");
+
+                        if (w.length == 1) {
+                            for (Participant partWriter : show.getWriters()) {
+                                if (!partWriter.getFirst().equals(w[0]))
+                                    printMe = false;
+                            }
+                        } else if (w.length == 2) {
+                            for (Participant partWriter : show.getWriters()) {
+                                if (!partWriter.getFirst().equals(w[0]) && !partWriter.getLast().equals(w[1]))
+                                    printMe = false;
+                            }
+                        } else if (w.length == 3) {
+                            for (Participant partWriter : show.getWriters()) {
+                                if (!partWriter.getFirst().equals(w[0]) && !partWriter.getMiddle().equals(w[1])
+                                        && !partWriter.getLast().contentEquals(w[2]))
+                                    printMe = false;
+                            }
+                        } else {
+                            Logger.getInstance().log("Invalid Writer Name, query may return unexpected results.");
+                        }
+                    }
+
+                    if (director != null) {
+                        String d[] = director.split(" ");
+
+                        if (d.length == 1) {
+                            for (Participant partDirector : show.getDirectors()) {
+                                if (!partDirector.getFirst().equals(d[0]))
+                                    printMe = false;
+                            }
+                        } else if (d.length == 2) {
+                            for (Participant partDirector : show.getDirectors()) {
+                                if (!partDirector.getFirst().equals(d[0]) && !partDirector.getLast().equals(d[1]))
+                                    printMe = false;
+                            }
+                        } else if (d.length == 3) {
+                            for (Participant partDirector : show.getDirectors()) {
+                                if (!partDirector.getFirst().equals(d[0]) && !partDirector.getMiddle().equals(d[1])
+                                        && !partDirector.getLast().contentEquals(d[2]))
+                                    printMe = false;
+                            }
+                        } else {
+                            Logger.getInstance().log("Invalid Director Name, query may return unexpected results.");
+                        }
+                    }
+
+                    if (printMe)
+                        returnMessage += show.toString() + "\n";
                 }
             } else {
                 returnMessage = "No TV Shows found with that filter.\n";
@@ -579,185 +719,6 @@ public class SQLHelper {
                 }
             }
         }
-    }
-
-    private ArrayList<Integer> queryParticipants(String actor, String writer, String director) {
-        String query = "";
-        ArrayList<Integer> ids = new ArrayList<Integer>();
-
-        PreparedStatement st = null;
-        ResultSet rs = null;
-
-        if (actor != null) {
-            query = "SELECT TitleId FROM PARTICIPATES_IN, PARTICIPANT "
-                    + "WHERE PARTICIPATES_IN.ParticipantId = PARTICIPANT.ParticipantId ";
-
-            try {
-                String[] s = actor.split(" ");
-
-                if (s.length == 1) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIATES_IN.isActor = 1 ";
-                } else if (s.length == 2) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIPANT.LastName = " + s[1] + " ";
-                    query += "AND PARTICIATES_IN.isActor = 1 ";
-                } else if (s.length == 3) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIPANT.MiddleName = " + s[1] + " ";
-                    query += "AND PARTICIPANT.LastName = " + s[2] + " ";
-                    query += "AND PARTICIATES_IN.isActor = 1 ";
-                } else {
-                    Logger.getInstance().log("Invalid Actor Name, query may return unexpected results.");
-                }
-
-                if (query.endsWith(" ")) {
-                    query = query.substring(0, query.length() - 1);
-                }
-
-                st = this.con.prepareStatement(query);
-                rs = st.executeQuery();
-
-                while (rs.next()) {
-                    ids.add(rs.getInt(1));
-                }
-            } catch (SQLException e) {
-                Logger.getInstance().log(e.getMessage());
-            } finally {
-                if (rs != null) {
-                    try {
-                        rs.close();
-                    } catch (SQLException e) {
-                        Logger.getInstance().log(e.getMessage());
-                    }
-                }
-
-                if (st != null) {
-                    try {
-                        st.close();
-                    } catch (SQLException e) {
-                        Logger.getInstance().log(e.getMessage());
-                    }
-                }
-            }
-        }
-
-        st = null;
-        rs = null;
-
-        if (writer != null) {
-            query = "SELECT TitleId FROM PARTICIPATES_IN, PARTICIPANT "
-                    + "WHERE PARTICIPATES_IN.ParticipantId = PARTICIPANT.ParticipantId ";
-
-            try {
-                String[] s = writer.split(" ");
-
-                if (s.length == 1) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIATES_IN.isWriter = 1 ";
-                } else if (s.length == 2) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIPANT.LastName = " + s[1] + " ";
-                    query += "AND PARTICIATES_IN.isWriter = 1 ";
-                } else if (s.length == 3) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIPANT.MiddleName = " + s[1] + " ";
-                    query += "AND PARTICIPANT.LastName = " + s[2] + " ";
-                    query += "AND PARTICIATES_IN.isWriter = 1 ";
-                } else {
-                    Logger.getInstance().log("Invalid Writer Name, query may return unexpected results.");
-                }
-
-                if (query.endsWith(" ")) {
-                    query = query.substring(0, query.length() - 1);
-                }
-
-                st = this.con.prepareStatement(query);
-                rs = st.executeQuery();
-
-                while (rs.next()) {
-                    ids.add(rs.getInt(1));
-                }
-            } catch (SQLException e) {
-                Logger.getInstance().log(e.getMessage());
-            } finally {
-                if (rs != null) {
-                    try {
-                        rs.close();
-                    } catch (SQLException e) {
-                        Logger.getInstance().log(e.getMessage());
-                    }
-                }
-
-                if (st != null) {
-                    try {
-                        st.close();
-                    } catch (SQLException e) {
-                        Logger.getInstance().log(e.getMessage());
-                    }
-                }
-            }
-        }
-
-        st = null;
-        rs = null;
-
-        if (director != null) {
-            query = "SELECT TitleId FROM PARTICIPATES_IN, PARTICIPANT "
-                    + "WHERE PARTICIPATES_IN.ParticipantId = PARTICIPANT.ParticipantId ";
-
-            try {
-                String[] s = director.split(" ");
-
-                if (s.length == 1) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIATES_IN.isDirector = 1 ";
-                } else if (s.length == 2) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIPANT.LastName = " + s[1] + " ";
-                    query += "AND PARTICIATES_IN.isDirector = 1 ";
-                } else if (s.length == 3) {
-                    query += "AND PARTICIPANT.FirstName = " + s[0] + " ";
-                    query += "AND PARTICIPANT.MiddleName = " + s[1] + " ";
-                    query += "AND PARTICIPANT.LastName = " + s[2] + " ";
-                    query += "AND PARTICIATES_IN.isDirector = 1 ";
-                } else {
-                    Logger.getInstance().log("Invalid Director Name, query may return unexpected results.");
-                }
-
-                if (query.endsWith(" ")) {
-                    query = query.substring(0, query.length() - 1);
-                }
-
-                st = this.con.prepareStatement(query);
-                rs = st.executeQuery();
-
-                while (rs.next()) {
-                    ids.add(rs.getInt(1));
-                }
-            } catch (SQLException e) {
-                Logger.getInstance().log(e.getMessage());
-            } finally {
-                if (rs != null) {
-                    try {
-                        rs.close();
-                    } catch (SQLException e) {
-                        Logger.getInstance().log(e.getMessage());
-                    }
-                }
-
-                if (st != null) {
-                    try {
-                        st.close();
-                    } catch (SQLException e) {
-                        Logger.getInstance().log(e.getMessage());
-                    }
-                }
-            }
-        }
-
-        Util.removeDuplicates(ids);
-        return ids;
     }
 
     public boolean insertMovie(int id, String name, String country, String agerating, int day, int month, int year,
