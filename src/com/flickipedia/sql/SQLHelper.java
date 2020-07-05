@@ -155,6 +155,7 @@ public class SQLHelper {
             if (rs.next()) {
                 do {
                     shows.add(new TVShow(rs.getInt(1), rs.getString(3)));
+                    shows.get(shows.size() - 1).setCountry(rs.getString(2));
                     this.addSeasons(shows.get(shows.size() - 1), start, end);
 
                     if (shows.get(shows.size() - 1).getSeasons().size() == 0) {
